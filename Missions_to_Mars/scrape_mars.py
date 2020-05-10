@@ -35,6 +35,7 @@ def scrape_urls():
     #pause to make sure the webpage to load first.
     time.sleep(3)
     #retrieve background-image url -- use .click method to go from one page to next page
+    #https://splinter.readthedocs.io/en/latest/finding.html <- use to click from this one page to next documentation
     featured_image = browser.links.find_by_partial_text('FULL IMAGE')
     featured_image.click()
     time.sleep(3)
