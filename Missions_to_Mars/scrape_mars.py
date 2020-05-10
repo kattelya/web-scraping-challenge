@@ -1,3 +1,5 @@
+# https://realpython.com/beautiful-soup-web-scraper-python/ 
+# Why i didnt stumble open this website a lot more earlier arg! - need to review this subject for sure! 
 from splinter import Browser
 from selenium import webdriver
 from bs4 import BeautifulSoup as bs
