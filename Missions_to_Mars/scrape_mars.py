@@ -2,13 +2,14 @@ from splinter import Browser
 from selenium import webdriver
 from bs4 import BeautifulSoup as bs
 import pandas as pd
-from flask import Flask, render_template
-from flask_pymongo import PyMongo
 import requests
 import time
+from flask import Flask, render_template
+from flask_pymongo import PyMongo
+
 
 # transfer most of the code that you had written in ipynb to here
-def scrape_url():
+def scrape_urls():
     executable_path = {"executable_path":"/usr/local/bin/chromedriver"}
     browser = Browser("chrome", **executable_path, headless=False)
 
@@ -22,32 +23,29 @@ def scrape_url():
     soup = bs(html, 'html.parser')
     browser.is_element_present_by_css("li.slide", wait_time=2)
 
-    # parse HTML with BS 
-    soup = bs(html, 'html.parser')
-    browser.is_element_present_by_css("li.slide", wait_time=2)
-
+    # search article for title and paragraph
     article = soup.select_one("li.slide div.list_text")
-    title = article.find("div", class_="content_title").text
-    paragraph = article.find("div", class_="article_teaser_body").text
+    ## why this is not working when it works in ipynb?? 
+    title = article.find("div", class_="content_title").get_text()
+    paragraph = article.find("div", class_="article_teaser_body").get_text()
 
 
     ### JPL Mars Space Image - Featured 
-    #URL for JPL Mars Space Images
+    #URL for JPL Mars Space Images 
     jpl_mars_images = "https://www.jpl.nasa.gov/spaceimages/?search=&category=Mars"
     browser.visit(jpl_mars_images)
     #pause to make sure the webpage to load first.
     time.sleep(3)
-
-    #retrieve background-image url -- still need to fix 
-    featured_image_url = browser.links.find_by_partial_text('FULL IMAGE')
-    featured_image_url.click()
+    #retrieve background-image url -- use .click method to go from one page to next page
+    featured_image = browser.links.find_by_partial_text('FULL IMAGE')
+    featured_image.click()
     time.sleep(3)
 
-    featured_image_url = browser.links.find_by_partial_text('more info')
-    featured_image_url.click()
+    featured_image = browser.links.find_by_partial_text('more info')
+    featured_image.click()
     time.sleep(3)
-    
-    #Scrape page into Soup object 
+
+    # after clicking and reach the right page, use Soup to scrape page into Soup object 
     html = browser.html
     soup = bs(html, 'html.parser')
     image_url = soup.select_one('figure.lede a img').get('src')
@@ -56,17 +54,13 @@ def scrape_url():
 
     ###Mars Weather
 
-
-
-
-
     #Mars Facts 
     #Visit Space facts website - using pd.read_html that i found online and see from people's example
     mars_fact_df = pd.read_html("https://space-facts.com/mars/")
     mars_fact_df = mars_fact_df[0]
     mars_fact_df = mars_fact_df.rename(columns = { 0 : "Description", 1 : "Values"})
     mars_fact_df
-    html_table = mars_fact_df.to_html()
+    html_table = mars_fact_df ##.to_html()
 
     ###Mars Hemispheres 
     # Visit hemispheres website through splinter module 
@@ -80,11 +74,28 @@ def scrape_url():
         browser.find_by_css("a.product-item h3")[i].click()
         time.sleep(3)
         sample_elem = browser.find_link_by_text('Sample').first
-        hemisphere['img_url'] = sample_elem['href']
         hemisphere['title'] = browser.find_by_css("h2.title").text
+        hemisphere['img_url'] = sample_elem['href']
         hemisphere_image_urls.append(hemisphere)
         browser.back()
-    print(hemisphere_image_urls)
+    browser.quit()
+    return title, paragraph, featured_image_url, html_table, hemisphere_image_urls 
+
+## create a function to call all of our return variable
+#def callfuncs():
+   ##title, paragraph, featured_image_url, html_table, hemisphere_image_urls = scrape_urls()
+
+   ## create a dictionary to store all of our scraped variables
+    mars_data = {
+        "news_title": title,
+        "news_paragraph": paragraph,
+        "featured_image": featured_image_url,
+        ## uncoment when you figure out the code "mars_weather": mars_weather,
+        "description": html_table,
+        "hemispheres": hemisphere_image_urls
+    }
+    browser.quit()
+    return mars_data
 
 if __name__ == "__main__":
-    scrape_url()
+    print(scrape_urls())
