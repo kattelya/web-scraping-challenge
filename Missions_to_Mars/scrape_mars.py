@@ -7,8 +7,7 @@ import time
 from flask import Flask, render_template
 from flask_pymongo import PyMongo
 
-
-# transfer most of the code that you had written in ipynb to here
+# transfer most of the code that you had written in ipynb to here. Nonetheless the code didn't work as i expected. 
 def scrape_urls():
     executable_path = {"executable_path":"/usr/local/bin/chromedriver"}
     browser = Browser("chrome", **executable_path, headless=False)
@@ -28,7 +27,6 @@ def scrape_urls():
     ## why this is not working when it works in ipynb?? 
     title = article.find("div", class_="content_title").get_text()
     paragraph = article.find("div", class_="article_teaser_body").get_text()
-
 
     ### JPL Mars Space Image - Featured 
     #URL for JPL Mars Space Images 
@@ -79,7 +77,6 @@ def scrape_urls():
         hemisphere_image_urls.append(hemisphere)
         browser.back()
     browser.quit()
-    return title, paragraph, featured_image_url, html_table, hemisphere_image_urls 
 
 ## create a function to call all of our return variable
 #def callfuncs():
@@ -94,8 +91,8 @@ def scrape_urls():
         "description": html_table,
         "hemispheres": hemisphere_image_urls
     }
-    browser.quit()
+    print(mars_data)
     return mars_data
 
 if __name__ == "__main__":
-    print(scrape_urls())
+    scrape_urls()
